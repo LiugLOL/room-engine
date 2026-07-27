@@ -54,7 +54,10 @@ class Message:
     event_type: MessageType
     payload: dict
     timestamp: datetime
-
+#def funcao (parametro: tipodoparametro) -> tipodoresultado:
+#    return (
+#        expressao
+#
 def encode_msg(message: Message) -> str:
     return json.dumps({
         "sender_id": message.sender_id,

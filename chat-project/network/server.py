@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from starlette.websockets import WebSocketDisconnect
 
+from network import handlers
 from room.room_manager import RoomManager
 from network.connection_manager import ConnectionManager
 from network.protocol import Message, decode_msg, MessageType, MessageSource
@@ -37,7 +38,7 @@ class Server:
             response = Message(
                 sender_id=message.sender_id,
                 source=MessageSource.SERVER,
-                event_type=MessageType.CREATE_ROOM,
+                event_type=MessageType.ROOM_CREATED,
                 payload={"room_code": room_code},
                 timestamp = datetime.now(timezone.utc)
                 )
@@ -45,6 +46,17 @@ class Server:
 
         elif message.event_type == MessageType.JOIN_ROOM:
             await self.handlers.handle_join_room(message)
+            room_code = message.payload["room_code"]
+            request = Message(
+                sender_id=message.sender_id,
+                source=MessageSource.CLIENT,
+                event_type=MessageType.JOIN_ROOM,
+                payload={"room_code": room_code},
+                timestamp=datetime.now(timezone.utc)
+            )
+            await self.handlers.handle_join_room(request)
+
+            return response
 
         elif message.event_type == MessageType.LEAVE_ROOM:
             await self.handlers.handle_leave_room(message)

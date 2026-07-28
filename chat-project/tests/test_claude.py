@@ -695,7 +695,7 @@ class TestProtocol(unittest.TestCase):
         return Message(
             sender_id=42,
             source=MessageSource.CLIENT,
-            event_type=mtype or MessageType.CHAT_MESSAGE,
+            event_type=mtype or MessageType.SEND_CHAT_MESSAGE,
             payload=payload or {"text": "ola"},
             timestamp=datetime.now(timezone.utc),
         )
@@ -709,7 +709,7 @@ class TestProtocol(unittest.TestCase):
             msg = self._msg()
             ok = (msg.sender_id == 42
                   and msg.source == MessageSource.CLIENT
-                  and msg.event_type == MessageType.CHAT_MESSAGE
+                  and msg.event_type == MessageType.SEND_CHAT_MESSAGE
                   and msg.payload == {"text": "ola"}
                   and isinstance(msg.timestamp, datetime))
             log(name, "Instanciacao de Message",
@@ -981,7 +981,7 @@ class TestConnectionManager(unittest.TestCase):
             msg = Message(
                 sender_id=1,
                 source=MessageSource.SERVER,
-                event_type=MessageType.CHAT_MESSAGE,
+                event_type=MessageType.SEND_CHAT_MESSAGE,
                 payload={"text": "hello"},
                 timestamp=datetime.now(timezone.utc)
             )
@@ -1008,7 +1008,7 @@ class TestConnectionManager(unittest.TestCase):
             msg = Message(
                 sender_id=1,
                 source=MessageSource.SERVER,
-                event_type=MessageType.CHAT_MESSAGE,
+                event_type=MessageType.SEND_CHAT_MESSAGE,
                 payload={"text": "hello"},
                 timestamp=datetime.now(timezone.utc)
             )
@@ -1037,7 +1037,7 @@ class TestConnectionManager(unittest.TestCase):
             msg = Message(
                 sender_id=0,
                 source=MessageSource.SERVER,
-                event_type=MessageType.CHAT_MESSAGE,
+                event_type=MessageType.SEND_CHAT_MESSAGE,
                 payload={"text": "broadcast"},
                 timestamp=datetime.now(timezone.utc)
             )

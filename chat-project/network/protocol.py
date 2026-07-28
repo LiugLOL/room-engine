@@ -6,46 +6,32 @@ Event types
 Message structure
 Functions to create and validate messages on the chat.
 
+All events with * on the end are broadcasted to all users in the room, others not marked are private.
 Client event types:
 Create Room
 Join Room
 Leave room
 Transfer host (for only users with the HOST role on the room)
-Send messages
+Send chat message
 
 Server event types:
 Room created
-Room joined
-Player joined
-Player left
-Host transferred
-Chat message
+Player joined *
+Player left *
+Host transferred *
+Chat message *
 Errors in general
 """
 
 from datetime import datetime
 from dataclasses import dataclass
 from enum import Enum
+from network.message_types import MessageType
 import json
 
 class MessageSource(Enum):
     CLIENT = "client"
     SERVER = "server"
-
-class MessageType(Enum):
-    CREATE_ROOM = "create_room"
-    JOIN_ROOM = "join_room"
-    LEAVE_ROOM = "leave_room"
-    TRANSFER_HOST = "transfer_host"
-
-    CHAT_MESSAGE = "chat_message"
-
-    ROOM_CREATED = "room_created"
-    ROOM_JOINED = "room_joined"
-    PLAYER_JOINED = "player_joined"
-    PLAYER_LEFT = "player_left"
-    HOST_TRANSFERRED = "host_transferred"
-    ERROR = "error"
 
 @dataclass
 class Message:

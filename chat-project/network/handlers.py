@@ -1,39 +1,48 @@
-from room.room_manager import RoomManager
 from network.protocol import Message
-from network.connection_manager import ConnectionManager
+from network.error_types import ErrorCode
 class Handlers:
-    def __init__(self, room_manager: RoomManager, connection_manager: ConnectionManager):
+
+    def __init__(self, room_manager, connection_manager):
         self.room_manager = room_manager
         self.connection_manager = connection_manager
+
+
+
     async def handle_create_room(self, message: Message):
-        user_id = message.sender_id
-        room_code = self.room_manager.create_room(user_id)
-        return room_code
+
+        return self.room_manager.create_room(
+            message.sender_id
+        )
+
 
 
     async def handle_join_room(self, message: Message):
-        user_id = message.sender_id
-        room_code = message.payload["room_code"]
-        answer = self.room_manager.join_room(room_code, user_id)
-        return answer
+
+        return self.room_manager.join_room(
+            message.payload["room_code"],
+            message.sender_id
+        )
+
 
 
     async def handle_leave_room(self, message: Message):
-        user_id = message.sender_id
-        room_code = message.payload["room_code"]
-        answer = self.room_manager.leave_room(room_code, user_id)
-        return answer
 
-    async def handle_chat_message(self, message: Message):
+        return self.room_manager.leave_room(
+            message.payload["room_code"],
+            message.sender_id
+        )
+
+    async def handle_chat_message(self, message):
         user_id = message.sender_id
+
         room_players = self.room_manager.get_players_room(user_id)
 
         if room_players is None:
-            return "User is not in a room"
+            return {
+                "success": False,
+                "error": ErrorCode.USER_NOT_IN_ROOM.value
+            }
 
-        users_id = [player.user_id for player in room_players]
-
-        await self.connection_manager.send_to_users(
-            users_id,
-            message
-        )
+        return {
+            "success": True
+        }

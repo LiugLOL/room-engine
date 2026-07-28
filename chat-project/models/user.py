@@ -1,5 +1,9 @@
+""""
+User model, shows the whole user structure and data
+"""
+
 from dataclasses import dataclass
 @dataclass
 class User:
-    name: str
     id: int
+    nickname: str

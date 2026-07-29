@@ -1,3 +1,4 @@
+from chat import app, server
 from fastapi import FastAPI, WebSocket
 from network.server import Server
 

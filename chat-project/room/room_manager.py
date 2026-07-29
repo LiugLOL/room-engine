@@ -38,7 +38,6 @@ class RoomManager:
         return {
             "success": True,
             "room_code": room_code,
-            "player": result["player"]
         }
 
 

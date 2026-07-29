@@ -9,10 +9,9 @@ class Handlers:
 
 
     async def handle_create_room(self, message: Message):
-
-        return self.room_manager.create_room(
-            message.sender_id
-        )
+        response = self.room_manager.create_room(message.sender_id)
+        payload = response["room_code"]
+        return payload
 
 
 

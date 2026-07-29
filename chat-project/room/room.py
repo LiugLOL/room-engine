@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from models.room_player import PlayerRole, RoomPlayer
-from network.error_types import ErrorCode
+from core.result import Success, Failure, InternalError, Result
+from network.error_types import ErrorType
 
 
 class Room:
@@ -13,20 +14,25 @@ class Room:
         self.status = "Testing"
         self.next_local_id = 0
 
-
-    def add_player(self, user_id: int):
+    def add_player(self, user_id: int) -> Result[RoomPlayer]:
         if user_id in self.players:
-            return {
-                "success": False,
-                "error": ErrorCode.USER_ALREADY_IN_ROOM.value
-            }
+            return Failure(
+                InternalError(
+                    code=ErrorType.USER_ALREADY_IN_ROOM,
+                    message="User already in room",
+                    details={
+                        "user_id": user_id,
+                        "room_code": self.code,
+                    },
+                )
+            )
 
         player = RoomPlayer(
             user_id=user_id,
             room_id=self.code,
             local_id=self.next_local_id,
             joined_at=datetime.now(timezone.utc),
-            role=PlayerRole.PLAYER
+            role=PlayerRole.PLAYER,
         )
 
         self.players[user_id] = player
@@ -37,18 +43,14 @@ class Room:
 
         self.next_local_id += 1
 
-        return {
-            "success": True,
-            "player": player,
-            "room_code": self.code
-        }
+        return Success(player)
 
 
     def remove_player(self, user_id: int):
         if user_id not in self.players:
             return {
                 "success": False,
-                "error": ErrorCode.USER_NOT_IN_ROOM.value
+                "error": ErrorType.USER_NOT_IN_ROOM.value
             }
 
         player = self.players[user_id]
@@ -100,19 +102,19 @@ class Room:
         if self.host_id is None:
             return {
                 "success": False,
-                "error": ErrorCode.NO_HOST_IN_ROOM.value
+                "error": ErrorType.NO_HOST_IN_ROOM.value
             }
 
         if user_id not in self.players:
             return {
                 "success": False,
-                "error": ErrorCode.USER_NOT_IN_ROOM.value
+                "error": ErrorType.USER_NOT_IN_ROOM.value
             }
 
         if user_id == self.host_id:
             return {
                 "success": False,
-                "error": ErrorCode.USER_ALREADY_HOST.value
+                "error": ErrorType.USER_ALREADY_HOST.value
             }
 
         old_host = self.players[self.host_id]

@@ -1,5 +1,5 @@
 from network.protocol import Message
-from network.error_types import ErrorCode
+from network.error_types import ErrorType
 class Handlers:
 
     def __init__(self, room_manager, connection_manager):
@@ -39,7 +39,7 @@ class Handlers:
         if room_players is None:
             return {
                 "success": False,
-                "error": ErrorCode.USER_NOT_IN_ROOM.value
+                "error": ErrorType.USER_NOT_IN_ROOM.value
             }
 
         return {

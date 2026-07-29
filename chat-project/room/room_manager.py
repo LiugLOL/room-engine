@@ -1,4 +1,5 @@
-from room import room
+from room.room import Room
+from core.result import Success, Failure
 import random
 
 
@@ -29,16 +30,11 @@ class RoomManager:
 
         room_code = self.generate_room_code()
 
-        new_room = room.Room(room_code)
+        new_room  = Room(room_code)
 
         self.rooms[room_code] = new_room
-
         result = new_room.add_player(user_id)
 
-        return {
-            "success": True,
-            "room_code": room_code,
-        }
 
 
     def join_room(self, room_code: str, user_id: int):

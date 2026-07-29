@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ErrorCode(Enum):
+class ErrorType(Enum):
     # Room errors
     ROOM_NOT_FOUND = "room_not_found"
     USER_ALREADY_IN_ROOM = "user_already_in_room"

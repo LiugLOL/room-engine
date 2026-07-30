@@ -1,9 +1,9 @@
 import random
-from core.result import Failure, InternalError, Result, Success
-from models.room_player import RoomPlayer
-from core.error_types import ErrorType
-from room.results import LeaveRoomResult, RoomCreation
-from room.room import Room
+from room_engine.core.result import Failure, InternalError, Result, Success
+from room_engine.rooms.room_player import RoomPlayer
+from room_engine.core.error_types import ErrorType
+from room_engine.rooms.results import LeaveRoomResult, RoomCreation
+from room_engine.rooms.room import Room
 
 class RoomManager:
 
@@ -12,7 +12,7 @@ class RoomManager:
 
 
 
-    def generate_room_code(self):
+    def generate_room_code(self) -> str:
         letras = "ABCDEFGHJKLMNPQRSTUVWXYZ"
         numeros = "23456789"
 
@@ -47,7 +47,7 @@ class RoomManager:
         )
 
 
-    def join_room(self,room_code: str,user_id: int) -> Result[RoomPlayer]:
+    def join_room(self, room_code: str, user_id: int) -> Result[RoomPlayer]:
         room = self.rooms.get(room_code)
 
         if room is None:
@@ -64,7 +64,7 @@ class RoomManager:
         return room.add_player(user_id)
 
 
-    def leave_room(self,room_code: str,user_id: int,) -> Result[LeaveRoomResult]:
+    def leave_room(self, room_code: str, user_id: int) -> Result[LeaveRoomResult]:
         room = self.rooms.get(room_code)
 
         if room is None:

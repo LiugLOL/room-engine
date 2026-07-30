@@ -6,12 +6,12 @@ Event types
 Message structure
 Functions to create and validate messages on the chat.
 
-All events with * on the end are broadcasted to all users in the room, others not marked are private.
+All events with * on the end are broadcasted to all users in the rooms, others not marked are private.
 Client event types:
 Create Room
 Join Room
-Leave room
-Transfer host (for only users with the HOST role on the room)
+Leave rooms
+Transfer host (for only users with the HOST role on the rooms)
 Send chat message
 
 Server event types:

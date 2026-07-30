@@ -3,7 +3,7 @@ from fastapi import WebSocket
 from starlette.websockets import WebSocketDisconnect
 from models.connection import Connection
 from models.user import User
-from room.room_manager import RoomManager
+from rooms.room_manager import RoomManager
 
 from network.protocol import Message, encode_msg
 

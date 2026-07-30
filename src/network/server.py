@@ -4,11 +4,11 @@ messages to the users
 """
 from datetime import datetime, timezone
 from starlette.websockets import WebSocketDisconnect
-from room.room_manager import RoomManager
+from rooms.room_manager import RoomManager
 from network.connection_manager import ConnectionManager
 from network.protocol import Message, decode_msg, MessageSource
 from network.message_types import MessageType, BROADCAST_EVENTS
-from network.handlers import Handlers
+from handlers.handlers import Handlers
 from fastapi import WebSocket
 
 #To make easier returning server responses to the client
@@ -56,7 +56,7 @@ class Server:
     async def handle_message(self, message: Message):
 
         if message.event_type == MessageType.CREATE_ROOM:
-            #request is the user creating a room
+            #request is the user creating a rooms
             room_code = await self.handlers.handle_create_room(message)
             return server_message(MessageType.ROOM_CREATED, {"room_code": room_code})
 

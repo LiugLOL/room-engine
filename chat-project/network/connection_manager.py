@@ -8,9 +8,12 @@ from room.room_manager import RoomManager
 from network.protocol import Message, encode_msg
 
 class ConnectionManager:
+
     def __init__(self, room_manager: RoomManager):
         self.connections: dict[int, Connection] = {}
         self.room_manager = room_manager
+
+
 
     async def connect(self, user_id: int, nickname:str, websocket: WebSocket):
         await websocket.accept()
@@ -22,9 +25,11 @@ class ConnectionManager:
 
         self.connections[user.id] = connection
 
+
     def disconnect(self, user_id: int):
         if user_id in self.connections:
             del self.connections[user_id]
+
 
     async def send_to_user(self, user_id: int, message: Message):
         """
@@ -46,19 +51,23 @@ class ConnectionManager:
             self.disconnect(user_id)
             return False
 
+
     async def send_to_users(self, users_id: list[int], message: Message):
         results = []
         for user_id in users_id:
             result = await self.send_to_user(user_id, message)
             results.append(result)
         return results
+
+
     def get_user(self, user_id: int) -> User | None:
         if user_id not in self.connections:
             return None
         return self.connections[user_id].user
 
+
     async def send_to_room(self, user_id: int, message: Message):
-        users = self.room_manager.get_players_room(user_id)
+        users = self.room_manager.get_room_players_by_user(user_id)
         if users is None:
             return False
         users_id = [

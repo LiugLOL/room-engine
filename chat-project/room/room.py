@@ -1,18 +1,21 @@
 from datetime import datetime, timezone
 from models.room_player import PlayerRole, RoomPlayer
 from core.result import Success, Failure, InternalError, Result
-from network.error_types import ErrorType
+from core.error_types import ErrorType
+from room.results import HostTransfer
 
 
 class Room:
 
-    def __init__(self, code):
-        self.code = code
-        self.players = {}
-        self.host_id = None
+    def __init__(self, code: str):
+        self.code: str = code
+        self.players: dict[int, RoomPlayer] = {}
+        self.host_id: int | None = None
         self.created_at = datetime.now(timezone.utc)
         self.status = "Testing"
-        self.next_local_id = 0
+        self.next_local_id: int = 0
+
+
 
     def add_player(self, user_id: int) -> Result[RoomPlayer]:
         if user_id in self.players:
@@ -29,7 +32,7 @@ class Room:
 
         player = RoomPlayer(
             user_id=user_id,
-            room_id=self.code,
+            room_code=self.code,
             local_id=self.next_local_id,
             joined_at=datetime.now(timezone.utc),
             role=PlayerRole.PLAYER,
@@ -46,12 +49,18 @@ class Room:
         return Success(player)
 
 
-    def remove_player(self, user_id: int):
+    def remove_player(self, user_id: int) -> Result[RoomPlayer]:
         if user_id not in self.players:
-            return {
-                "success": False,
-                "error": ErrorType.USER_NOT_IN_ROOM.value
-            }
+            return Failure(
+                InternalError(
+                    code=ErrorType.USER_NOT_IN_ROOM,
+                    message="User not in room",
+                    details={
+                        "user_id": user_id,
+                        "room_code": self.code,
+                    },
+                )
+            )
 
         player = self.players[user_id]
         player.left_at = datetime.now(timezone.utc)
@@ -61,61 +70,61 @@ class Room:
         if user_id == self.host_id:
             self.elect_new_host()
 
-        return {
-            "success": True,
-            "player": player
-        }
+        return Success(player)
 
 
-    def elect_new_host(self):
+    def elect_new_host(self) -> RoomPlayer | None:
         if not self.players:
             self.host_id = None
-            return {
-                "success": True,
-                "player": None
-            }
+            return None
 
         new_host = min(
             self.players.values(),
-            key=lambda player: player.local_id
+            key=lambda player: player.local_id,
         )
-        """"
-        what does the line "key=lambda player: player.local_id" means?
-        key: min "filter" that gets what compare on the min, at this case, the local ids
-        lambda: function with no name
-        generic way to use lambda:
-        lambda parameters: result like
-        lambda player: player.local_id
-        the parameter is the player itself, and the result is the local_id of the player
-        """
+
         new_host.role = PlayerRole.HOST
         self.host_id = new_host.user_id
 
-        return {
-            "success": True,
-            "player": new_host
-        }
+        return new_host
 
 
-    def transfer_host(self, user_id):
+    def transfer_host(self, user_id: int) -> Result[HostTransfer]:
 
         if self.host_id is None:
-            return {
-                "success": False,
-                "error": ErrorType.NO_HOST_IN_ROOM.value
-            }
+            return Failure(
+                InternalError(
+                    code=ErrorType.NO_HOST_IN_ROOM,
+                    message="No host in room",
+                    details={
+                        "room_code": self.code,
+                    },
+                )
+            )
 
         if user_id not in self.players:
-            return {
-                "success": False,
-                "error": ErrorType.USER_NOT_IN_ROOM.value
-            }
+            return Failure(
+                InternalError(
+                    code=ErrorType.USER_NOT_IN_ROOM,
+                    message="User not in room",
+                    details={
+                        "user_id": user_id,
+                        "room_code": self.code,
+                    },
+                )
+            )
 
         if user_id == self.host_id:
-            return {
-                "success": False,
-                "error": ErrorType.USER_ALREADY_HOST.value
-            }
+            return Failure(
+                InternalError(
+                    code=ErrorType.USER_ALREADY_HOST,
+                    message="User is already host",
+                    details={
+                        "user_id": user_id,
+                        "room_code": self.code,
+                    }
+                )
+            )
 
         old_host = self.players[self.host_id]
         new_host = self.players[user_id]
@@ -125,8 +134,12 @@ class Room:
 
         self.host_id = user_id
 
-        return {
-            "success": True,
-            "old_host": old_host,
-            "new_host": new_host
-        }
+        return Success(HostTransfer(
+            old_host=old_host,
+            new_host=new_host
+        ))
+
+
+    def get_player(self, user_id: int) -> RoomPlayer | None:
+        return self.players.get(user_id)
+

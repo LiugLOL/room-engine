@@ -23,10 +23,13 @@ def server_message(event_type: MessageType, payload, sender_id: int=0 ):
 
 
 class Server:
+
     def __init__(self):
         self.room_manager = RoomManager()
         self.connection_manager = ConnectionManager(room_manager=self.room_manager)
         self.handlers = Handlers(self.room_manager, self.connection_manager)
+
+
 
     async def handle_connection(self, user_id: int, nickname: str, websocket: WebSocket):
         await self.connection_manager.connect(user_id, nickname, websocket)

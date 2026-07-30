@@ -1,12 +1,15 @@
-from room.room import Room
-from core.result import Success, Failure
 import random
-
+from core.result import Failure, InternalError, Result, Success
+from models.room_player import RoomPlayer
+from core.error_types import ErrorType
+from room.results import LeaveRoomResult, RoomCreation
+from room.room import Room
 
 class RoomManager:
 
     def __init__(self):
-        self.rooms = {}
+        self.rooms: dict[str, Room] = {}
+
 
 
     def generate_room_code(self):
@@ -25,70 +28,84 @@ class RoomManager:
             if codigo not in self.rooms:
                 return codigo
 
-
-    def create_room(self, user_id: int):
-
+    def create_room(self, user_id: int) -> Result[RoomCreation]:
         room_code = self.generate_room_code()
+        new_room = Room(room_code)
 
-        new_room  = Room(room_code)
+        add_result = new_room.add_player(user_id)
+
+        if isinstance(add_result, Failure):
+            return add_result
 
         self.rooms[room_code] = new_room
-        result = new_room.add_player(user_id)
+
+        return Success(
+            RoomCreation(
+                room=new_room,
+                host=add_result.value,
+            )
+        )
 
 
+    def join_room(self,room_code: str,user_id: int) -> Result[RoomPlayer]:
+        room = self.rooms.get(room_code)
 
-    def join_room(self, room_code: str, user_id: int):
+        if room is None:
+            return Failure(
+                InternalError(
+                    code=ErrorType.ROOM_NOT_FOUND,
+                    message="Room not found",
+                    details={
+                        "room_code": room_code,
+                    },
+                )
+            )
 
-        if room_code not in self.rooms:
-            return {
-                "success": False,
-                "error": "ROOM_NOT_FOUND"
-            }
-
-
-        selected_room = self.rooms[room_code]
-
-        result = selected_room.add_player(user_id)
-
-        return result
-
-
-
-    def leave_room(self, room_code: str, user_id: int):
-
-        if room_code not in self.rooms:
-            return {
-                "success": False,
-                "error": "ROOM_NOT_FOUND"
-            }
+        return room.add_player(user_id)
 
 
-        selected_room = self.rooms[room_code]
+    def leave_room(self,room_code: str,user_id: int,) -> Result[LeaveRoomResult]:
+        room = self.rooms.get(room_code)
 
-        result = selected_room.remove_player(user_id)
+        if room is None:
+            return Failure(
+                InternalError(
+                    code=ErrorType.ROOM_NOT_FOUND,
+                    message="Room not found",
+                    details={
+                        "room_code": room_code,
+                    },
+                )
+            )
 
+        was_host = room.host_id == user_id
 
-        if not result["success"]:
-            return result
+        remove_result = room.remove_player(user_id)
 
+        if isinstance(remove_result, Failure):
+            return remove_result
 
-        # guarda informações antes de apagar
-        deleted = False
+        new_host = None
 
-        if len(selected_room.players) == 0:
+        if was_host and room.host_id is not None:
+            new_host = room.get_player(room.host_id)
+
+        room_deleted = False
+
+        if not room.players:
             del self.rooms[room_code]
-            deleted = True
+            room_deleted = True
+
+        return Success(
+            LeaveRoomResult(
+                player=remove_result.value,
+                room_deleted=room_deleted,
+                new_host=new_host,
+            )
+        )
 
 
-        return {
-            "success": True,
-            "player": result["player"],
-            "room_deleted": deleted
-        }
-
-
-
-    def get_players_room(self, user_id: int):
+    def get_room_players_by_user(self, user_id: int) -> list[RoomPlayer] | None:
 
         for lobby in self.rooms.values():
 
@@ -98,8 +115,7 @@ class RoomManager:
         return None
 
 
-
-    def get_user_room(self, user_id: int):
+    def get_user_room(self, user_id: int) -> str | None:
 
         for lobby in self.rooms.values():
 
@@ -109,7 +125,7 @@ class RoomManager:
         return None
 
 
-
-    def get_room(self, room_code:str):
+    def get_room(self, room_code: str) -> Room | None:
 
         return self.rooms.get(room_code)
+

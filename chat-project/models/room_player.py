@@ -22,8 +22,8 @@ class PlayerRole(Enum):
 @dataclass
 class RoomPlayer:
         user_id: int
-        room_id: int
-        local_id: int
-        joined_at: datetime
+        room_code: str
         role: PlayerRole
+        joined_at: datetime
+        local_id: int
         left_at: datetime | None = None

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Generic, TypeAlias, TypeVar
 
-from network.error_types import ErrorType
+from core.error_types import ErrorType
 
 T = TypeVar("T")
 

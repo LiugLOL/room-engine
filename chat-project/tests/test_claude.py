@@ -646,7 +646,7 @@ class TestRoomManager(unittest.TestCase):
         try:
             rm = self._mgr()
             code = rm.create_room(1)
-            result = rm.get_players_room(1)
+            result = rm.get_room_players_by_user(1)
             ok = isinstance(result, list)
             log(name, "get_players_room retorna lista de jogadores",
                 "user_id=1, sala criada",

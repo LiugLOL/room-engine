@@ -1,9 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-from models.room_player import RoomPlayer
+from room_engine.rooms.room_player import RoomPlayer
 if TYPE_CHECKING:
-    from room.room import Room
+    from room_engine.rooms.room import Room
 
 
 

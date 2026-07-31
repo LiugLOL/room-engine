@@ -1,4 +1,4 @@
-""""
+"""
 User model, shows the whole user structure and data
 """
 

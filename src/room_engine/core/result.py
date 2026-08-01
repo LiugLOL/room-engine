@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Generic, TypeAlias, TypeVar
 
-from core.error_types import ErrorType
+from room_engine.core.error_types import ErrorType
 
 T = TypeVar("T")
 

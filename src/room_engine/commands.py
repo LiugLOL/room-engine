@@ -1,17 +1,23 @@
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
-class CreateRoomCommand:
-    user_id: int
+class Command:
+    """Base type for commands handled by the engine."""
+    pass
+
 
 @dataclass(frozen=True)
-class JoinRoomCommand:
+class CreateRoomCommand(Command):
+    user_id: int
+
+
+@dataclass(frozen=True)
+class JoinRoomCommand(Command):
     user_id: int
     room_code: str
 
+
 @dataclass(frozen=True)
-class LeaveRoomCommand:
+class LeaveRoomCommand(Command):
     user_id: int
     room_code: str
-

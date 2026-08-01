@@ -6,18 +6,39 @@ from room_engine.rooms.results import HostTransfer
 
 
 class Room:
+    """Maintain membership and host selection for one room.
+
+    A room owns the player records for its code and enforces membership rules,
+    including assigning the first player as host and choosing a successor when
+    that host leaves.
+    """
 
     def __init__(self, code: str):
+        """Create an empty room identified by its externally shared code.
+
+        Args:
+            code: Unique code used to locate this room.
+        """
         self.code: str = code
         self.players: dict[int, RoomPlayer] = {}
         self.host_id: int | None = None
         self.created_at = datetime.now(timezone.utc)
-        self.status = "Testing"
         self.next_local_id: int = 0
 
 
 
     def add_player(self, user_id: int) -> Result[RoomPlayer]:
+        """Add a user to the room and assign their membership role.
+
+        The first player becomes host; later players join as regular players.
+
+        Args:
+            user_id: Identifier of the user joining the room.
+
+        Returns:
+            A success containing the new player record, or a failure if the
+            user is already a member.
+        """
         if user_id in self.players:
             return Failure(
                 InternalError(
@@ -50,6 +71,15 @@ class Room:
 
 
     def remove_player(self, user_id: int) -> Result[RoomPlayer]:
+        """Remove a member and elect a successor when the host leaves.
+
+        Args:
+            user_id: Identifier of the member leaving the room.
+
+        Returns:
+            A success containing the departed player's record, or a failure
+            if the user is not a member.
+        """
         if user_id not in self.players:
             return Failure(
                 InternalError(
@@ -74,6 +104,11 @@ class Room:
 
 
     def elect_new_host(self) -> RoomPlayer | None:
+        """Assign host responsibilities to the longest-serving member.
+
+        Returns:
+            The newly elected host, or ``None`` when the room is empty.
+        """
         if not self.players:
             self.host_id = None
             return None
@@ -90,6 +125,15 @@ class Room:
 
 
     def transfer_host(self, user_id: int) -> Result[HostTransfer]:
+        """Transfer host responsibilities to an existing non-host member.
+
+        Args:
+            user_id: Identifier of the player who should become host.
+
+        Returns:
+            A success describing the host transfer, or a failure when the room
+            has no host, the user is absent, or the user is already host.
+        """
 
         if self.host_id is None:
             return Failure(
@@ -141,5 +185,13 @@ class Room:
 
 
     def get_player(self, user_id: int) -> RoomPlayer | None:
+        """Find a member by user identifier.
+
+        Args:
+            user_id: Identifier of the player to retrieve.
+
+        Returns:
+            The player's room record, or ``None`` when they are not a member.
+        """
         return self.players.get(user_id)
 

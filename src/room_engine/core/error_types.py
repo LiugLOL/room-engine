@@ -2,6 +2,12 @@ from enum import Enum
 
 
 class ErrorType(Enum):
+    """Stable categories for domain failures returned by room operations.
+
+    These values let callers distinguish expected validation and state errors
+    without parsing human-readable messages.
+    """
+
     # Room errors
     ROOM_NOT_FOUND = "room_not_found"
     USER_ALREADY_IN_ROOM = "user_already_in_room"

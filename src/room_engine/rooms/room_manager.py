@@ -5,14 +5,27 @@ from room_engine.core.error_types import ErrorType
 from room_engine.rooms.results import LeaveRoomResult, RoomCreation
 from room_engine.rooms.room import Room
 
+
 class RoomManager:
+    """Coordinate the lifecycle and lookup of all active rooms.
+
+    The manager is the application state boundary for rooms. It creates unique
+    room codes, delegates membership rules to individual rooms, and removes
+    rooms that no longer have players.
+    """
 
     def __init__(self):
+        """Initialize an empty collection of active rooms."""
         self.rooms: dict[str, Room] = {}
 
 
 
     def generate_room_code(self) -> str:
+        """Generate an unused, human-readable room code.
+
+        Returns:
+            A six-character code not assigned to an active room.
+        """
         letras = "ABCDEFGHJKLMNPQRSTUVWXYZ"
         numeros = "23456789"
 
@@ -28,7 +41,17 @@ class RoomManager:
             if codigo not in self.rooms:
                 return codigo
 
+
     def create_room(self, user_id: int) -> Result[RoomCreation]:
+        """Create a room and make its creator the initial host.
+
+        Args:
+            user_id: Identifier of the user creating the room.
+
+        Returns:
+            A success containing the created room and host, or an expected
+            failure if the initial membership cannot be created.
+        """
         room_code = self.generate_room_code()
         new_room = Room(room_code)
 
@@ -48,6 +71,16 @@ class RoomManager:
 
 
     def join_room(self, room_code: str, user_id: int) -> Result[RoomPlayer]:
+        """Add a user to an existing room.
+
+        Args:
+            room_code: Code identifying the room to join.
+            user_id: Identifier of the user joining the room.
+
+        Returns:
+            A success containing the new player record, or a failure when the
+            room is missing or the user is already a member.
+        """
         room = self.rooms.get(room_code)
 
         if room is None:
@@ -65,6 +98,17 @@ class RoomManager:
 
 
     def leave_room(self, room_code: str, user_id: int) -> Result[LeaveRoomResult]:
+        """Remove a user from a room and clean up an empty room.
+
+        Args:
+            room_code: Code identifying the room to leave.
+            user_id: Identifier of the user leaving the room.
+
+        Returns:
+            A success describing the departure, including host reassignment or
+            room deletion, or an expected failure when the room or user is
+            absent.
+        """
         room = self.rooms.get(room_code)
 
         if room is None:
@@ -106,6 +150,15 @@ class RoomManager:
 
 
     def get_room_players_by_user(self, user_id: int) -> list[RoomPlayer] | None:
+        """Return the members of the room that contains a user.
+
+        Args:
+            user_id: Identifier of a room member.
+
+        Returns:
+            Player records for the user's room, or ``None`` when the user is
+            not in any active room.
+        """
 
         for lobby in self.rooms.values():
 
@@ -116,6 +169,14 @@ class RoomManager:
 
 
     def get_user_room(self, user_id: int) -> str | None:
+        """Find the room code for a user.
+
+        Args:
+            user_id: Identifier of the user to locate.
+
+        Returns:
+            The active room code containing the user, or ``None`` when absent.
+        """
 
         for lobby in self.rooms.values():
 
@@ -126,6 +187,14 @@ class RoomManager:
 
 
     def get_room(self, room_code: str) -> Room | None:
+        """Retrieve an active room by its code.
+
+        Args:
+            room_code: Code identifying the room.
+
+        Returns:
+            The matching room, or ``None`` when no active room has the code.
+        """
 
         return self.rooms.get(room_code)
 

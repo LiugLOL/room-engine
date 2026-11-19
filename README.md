@@ -165,6 +165,4 @@ These integrations would handle networking, serialization, and UI—while Room E
 
 This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
----
 
-**Created with ❤️ for building reusable, modular systems**
